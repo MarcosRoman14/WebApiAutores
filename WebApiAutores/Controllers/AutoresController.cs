@@ -15,11 +15,41 @@ namespace WebApiAutores.Controllers
         }
 
         //Comunicaciónes a base de datos una buena practica es usar programación async
-        [HttpGet] // Obtener datos de la bd
+        // Obtener datos de la bd
+        [HttpGet] // => ../api/autores/
+        [HttpGet("listado")] // => ../api/autores/listado
+        [HttpGet("/listado")] // => ../listado
         public async Task<ActionResult<List<Autor>>> Get() 
         {
             return await _context.Autores.Include(x => x.Libros).ToListAsync();
         }
+
+        [HttpGet("primero")]
+        public async Task<ActionResult<Autor>> PrimerAutor()
+        {
+            return await _context.Autores.FirstOrDefaultAsync();
+        }
+
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<Autor>> Get(int id)
+        {
+            Autor autor = await _context.Autores.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (autor == null) return NotFound();
+
+            return autor;
+        }
+
+        [HttpGet("{nombre}")]
+        public async Task<ActionResult<Autor>> Get(string nombre)
+        {
+            Autor autor = await _context.Autores.FirstOrDefaultAsync(x => x.Nombre.Contains(nombre));
+
+            if (autor == null) return NotFound();
+
+            return autor;
+        }
+
 
         [HttpPost] // Agregar datos a la bd
         public async Task<ActionResult> Post(Autor autor)
