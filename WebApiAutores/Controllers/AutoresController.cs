@@ -18,7 +18,7 @@ namespace WebApiAutores.Controllers
         [HttpGet] // Obtener datos de la bd
         public async Task<ActionResult<List<Autor>>> Get() 
         {
-            return await _context.Autores.ToListAsync();
+            return await _context.Autores.Include(x => x.Libros).ToListAsync();
         }
 
         [HttpPost] // Agregar datos a la bd
