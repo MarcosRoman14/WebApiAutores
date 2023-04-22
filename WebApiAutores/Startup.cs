@@ -43,6 +43,7 @@ namespace WebApiAutores
             //siempre se te da la misma instancia HTTP aun que sean diferentes usuarios
             services.AddTransient<IServicio, ServicioA>();
             services.AddTransient<MiFiltroDeAccion>();
+            services.AddHostedService<EscribirEnArchivo>();
 
             services.AddTransient<ServicioTransient>();
             services.AddScoped<ServicioScoped>();
