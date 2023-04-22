@@ -28,7 +28,7 @@
 
         public void RealizarTarea()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
     }
     public class ServicioB : IServicio
