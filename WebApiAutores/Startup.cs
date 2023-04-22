@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using WebApiAutores.Filtros;
 using WebApiAutores.Middlewares;
-using WebApiAutores.Servicios;
 
 namespace WebApiAutores
 {
@@ -32,38 +31,12 @@ namespace WebApiAutores
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("defaultConnection")));
 
-            ////util para un servicio transitorio que no conservaran datos, siempre se da una nueva instancia de la clase
-            //services.AddTransient<IServicio, ServicioA>();
-
-            ////util para mantener una instancia para cada usuario, cuando la data no va a cambiar y se espera mantener siempre la misma info
-            ////misma instancia en el mismo contexto HTTP
-            //services.AddScoped<IServicio, ServicioA>();
-
-            //cuando hay data en cache (memoria) y debe ser siempre la misma para todos los usuarios
-            //siempre se te da la misma instancia HTTP aun que sean diferentes usuarios
-            services.AddTransient<IServicio, ServicioA>();
-            services.AddTransient<MiFiltroDeAccion>();
-            services.AddHostedService<EscribirEnArchivo>();
-
-            services.AddTransient<ServicioTransient>();
-            services.AddScoped<ServicioScoped>();
-            services.AddSingleton<ServicioSingleton>();
-
-            services.AddResponseCaching();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
             app.UseLoguearRespuestaHTTP();
-
-            app.Map("/ruta1", app =>
-            {
-                app.Run(async contexto =>
-                {
-                    await contexto.Response.WriteAsync("Estoy interseptando la tubería");
-                });
-            });
 
             if (env.IsDevelopment())
             {
@@ -75,8 +48,6 @@ namespace WebApiAutores
             app.UseHttpsRedirection();
 
             app.UseRouting();
-
-            app.UseResponseCaching();
 
             //Antes de mapear los controladores para manejar autorizacion por controlador
             app.UseAuthorization();

@@ -3,69 +3,26 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApiAutores.Entities;
 using WebApiAutores.Filtros;
-using WebApiAutores.Servicios;
 
 namespace WebApiAutores.Controllers
 {
     [ApiController] // Validaciones automaticas respecto a la data recibida en el controlador
     [Route("api/autores")] // define la ruta del controlador (navegador)
-    //[Authorize]
     public class AutoresController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly IServicio servicio;
-        private readonly ServicioTransient servicioTransient;
-        private readonly ServicioScoped servicioScoped;
-        private readonly ServicioSingleton servicioSingleton;
-        private readonly ILogger<AutoresController> logger;
 
-        public AutoresController(ApplicationDbContext context, IServicio servicio,
-            ServicioTransient servicioTransient, ServicioScoped servicioScoped,
-            ServicioSingleton servicioSingleton, ILogger<AutoresController> logger)
+        public AutoresController(ApplicationDbContext context)
         {
             this._context = context;
-            this.servicio = servicio;
-            this.servicioTransient = servicioTransient;
-            this.servicioScoped = servicioScoped;
-            this.servicioSingleton = servicioSingleton;
-            this.logger = logger;
         }
 
-        [HttpGet("GUID")]
-        //[ResponseCache(Duration = 10)]
-        [ServiceFilter(typeof(MiFiltroDeAccion))]
-        public ActionResult ObtenerGuids()
-        {
-            return Ok(new
-            {
-                AutoresController_Transient = servicioTransient.Guid,
-                ServicioA_Transient = servicio.ObtenerTransient(),
-                AutoresController_Scoped = servicioScoped.Guid,
-                ServicioA_Scoped = servicio.ObtenerScoped(),
-                AutoresController_Singleton = servicioSingleton.Guid,
-                ServicioA_Singleton = servicio.ObtenerSingleton()
-            });
-        }
-        //Comunicaciónes a base de datos una buena practica es usar programación async
-        // Obtener datos de la bd
         [HttpGet] // => ../api/autores/
-        [HttpGet("listado")] // => ../api/autores/listado
-        [HttpGet("/listado")] // => ../listado
-        //[ResponseCache(Duration = 10)]
-        [ServiceFilter(typeof(MiFiltroDeAccion))]
         public async Task<ActionResult<List<Autor>>> Get()
         {
-            throw new NotImplementedException();
-            logger.LogInformation("Mensjae de logueo");
-            servicio.RealizarTarea();
-            return await _context.Autores.Include(x => x.Libros).ToListAsync();
+            return await _context.Autores./*Include(x => x.Libros).*/ToListAsync();
         }
 
-        [HttpGet("primero")]
-        public async Task<ActionResult<Autor>> PrimerAutor()
-        {
-            return await _context.Autores.FirstOrDefaultAsync();
-        }
 
         [HttpGet("{id:int}")]
         public async Task<ActionResult<Autor>> Get(int id)
