@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using WebApiAutores.Middlewares;
@@ -41,6 +42,9 @@ namespace WebApiAutores
             services.AddTransient<ServicioTransient>();
             services.AddScoped<ServicioScoped>();
             services.AddSingleton<ServicioSingleton>();
+
+            services.AddResponseCaching();
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
@@ -65,6 +69,11 @@ namespace WebApiAutores
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseResponseCaching();
+            
+            //Antes de mapear los controladores para manejar autorizacion por controlador
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
