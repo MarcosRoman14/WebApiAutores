@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
+using WebApiAutores.Filtros;
 using WebApiAutores.Middlewares;
 using WebApiAutores.Servicios;
 
@@ -19,8 +20,12 @@ namespace WebApiAutores
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddControllers().AddJsonOptions(x =>
+            services.AddControllers(options =>
+            {
+                options.Filters.Add(typeof(FiltroDeExcepcion));
+            }).AddJsonOptions(x =>
                 x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
@@ -37,7 +42,7 @@ namespace WebApiAutores
             //cuando hay data en cache (memoria) y debe ser siempre la misma para todos los usuarios
             //siempre se te da la misma instancia HTTP aun que sean diferentes usuarios
             services.AddTransient<IServicio, ServicioA>();
-
+            services.AddTransient<MiFiltroDeAccion>();
 
             services.AddTransient<ServicioTransient>();
             services.AddScoped<ServicioScoped>();
@@ -71,7 +76,7 @@ namespace WebApiAutores
             app.UseRouting();
 
             app.UseResponseCaching();
-            
+
             //Antes de mapear los controladores para manejar autorizacion por controlador
             app.UseAuthorization();
 
