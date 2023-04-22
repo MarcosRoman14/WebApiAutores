@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApiAutores.Entities;
+using WebApiAutores.Servicios;
 
 namespace WebApiAutores.Controllers
 {
@@ -9,18 +10,42 @@ namespace WebApiAutores.Controllers
     public class AutoresController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        public AutoresController(ApplicationDbContext context)
+        private readonly IServicio servicio;
+        private readonly ServicioTransient servicioTransient;
+        private readonly ServicioScoped servicioScoped;
+        private readonly ServicioSingleton servicioSingleton;
+
+        public AutoresController(ApplicationDbContext context, IServicio servicio,
+            ServicioTransient servicioTransient, ServicioScoped servicioScoped, ServicioSingleton servicioSingleton)
         {
             this._context = context;
+            this.servicio = servicio;
+            this.servicioTransient = servicioTransient;
+            this.servicioScoped = servicioScoped;
+            this.servicioSingleton = servicioSingleton;
         }
 
+        [HttpGet("GUID")]
+        public ActionResult ObtenerGuids()
+        {
+            return Ok(new
+            {
+                AutoresController_Transient = servicioTransient.Guid,
+                ServicioA_Transient = servicio.ObtenerTransient(),
+                AutoresController_Scoped = servicioScoped.Guid,
+                ServicioA_Scoped = servicio.ObtenerScoped(),
+                AutoresController_Singleton = servicioSingleton.Guid,
+                ServicioA_Singleton = servicio.ObtenerSingleton()
+            });
+        }
         //Comunicaciónes a base de datos una buena practica es usar programación async
         // Obtener datos de la bd
         [HttpGet] // => ../api/autores/
         [HttpGet("listado")] // => ../api/autores/listado
         [HttpGet("/listado")] // => ../listado
-        public async Task<ActionResult<List<Autor>>> Get() 
+        public async Task<ActionResult<List<Autor>>> Get()
         {
+            servicio.RealizarTarea();
             return await _context.Autores.Include(x => x.Libros).ToListAsync();
         }
 
@@ -54,6 +79,11 @@ namespace WebApiAutores.Controllers
         [HttpPost] // Agregar datos a la bd
         public async Task<ActionResult> Post(Autor autor)
         {
+            var existeAutorConElMismoNombre = await _context.Autores.AnyAsync(x => x.Nombre == autor.Nombre);
+            if (existeAutorConElMismoNombre)
+            {
+                return BadRequest($"Ya existe un autor con el nombre {autor.Nombre}");
+            }
             _context.Add(autor);
             await _context.SaveChangesAsync();
             return Ok();
@@ -78,12 +108,12 @@ namespace WebApiAutores.Controllers
         [HttpDelete("{id:int}")] // Eliminar dato de la bd
         public async Task<ActionResult> Delete(int id)
         {
-            bool existe = await _context.Autores.AnyAsync(x=> x.Id== id);
+            bool existe = await _context.Autores.AnyAsync(x => x.Id == id);
 
-            if(!existe)
+            if (!existe)
                 return NotFound();
 
-            _context.Remove(new Autor() {Id = id });
+            _context.Remove(new Autor() { Id = id });
             await _context.SaveChangesAsync();
             return Ok();
         }
